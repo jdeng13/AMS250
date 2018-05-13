@@ -1,10 +1,11 @@
 /*Passes data around a ring of processes*/
 #include "mpi.h"
 #include <stdio.h>
+
 int main(int argc, char *argv[]) {
  int size, rank, next, prev, buf[2], tag1=1, tage2=2;
  MPI_Request reqs[4];
- MPI_Request stats[4];
+ MPI_status stats[4];
  
  MPI_Init(&argc,&argv);
  MPI_Comm_size(MPI_COMM_WORLD, &size);
