@@ -23,5 +23,4 @@ int main(int argc, char *argv[] {
  MPI_Waitall(4, reqs, stats);
  MPI_Finalize();
  
- return 0;
 }
