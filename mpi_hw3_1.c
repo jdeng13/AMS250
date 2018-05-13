@@ -22,7 +22,7 @@ int main(int argc, char *argv[])  {
  
  /*do some work*/
  
- MPI_waitall(4, reqs, stats);
+ MPI_Waitall(4, reqs, stats);
  
  MPI_Finalize();
 }
