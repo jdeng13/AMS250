@@ -2,7 +2,7 @@
 #include "mpi.h"
 #include <stdio.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])  {
  int size, rank, next, prev, buf[2], tag1=1, tage2=2;
  MPI_Request reqs[4];
  MPI_status stats[4];
@@ -15,10 +15,10 @@ int main(int argc, char *argv[]) {
  if (rank == 0)  prev = size - 1;
  if (rank == (size-1)) next = 0;
  
- MPI_Irecv(&buf[0], 1, MPI_INT, prev, tag1, MPI_COMM_WORLD, &regs[0]);
- MPI_Irecv(&buf[1], 1, MPI_INT, next, tag2, MPI_COMM_WORLD, &regs[1]);
- MPI_Isend(&rank, 1, MPI_INT, prev, tag2, MPI_COMM_WORLD, &regs[2]);
- MPI_Isend(&rank, 1, MPI_INT, next, tag1, MPI_COMM_WORLD, &regs[3]);
+ MPI_Irecv(&buf[0], 1, MPI_INT, prev, tag1, MPI_COMM_WORLD, &reqs[0]);
+ MPI_Irecv(&buf[1], 1, MPI_INT, next, tag2, MPI_COMM_WORLD, &reqs[1]);
+ MPI_Isend(&rank, 1, MPI_INT, prev, tag2, MPI_COMM_WORLD, &reqs[2]);
+ MPI_Isend(&rank, 1, MPI_INT, next, tag1, MPI_COMM_WORLD, &reqs[3]);
  
  /*do some work*/
  
