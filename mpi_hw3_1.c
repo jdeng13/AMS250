@@ -24,6 +24,6 @@ int main(int argc, char *argv[])  {
  /*do some work*/
  
  MPI_Waitall(4, reqs, stats);
- printf("rank = %d);
+ printf("rank = %d");
  MPI_Finalize();
 }
