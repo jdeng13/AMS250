@@ -1,2 +1,2 @@
 # AMS250
-Scripts for the homework of AMS250
+Homework of AMS250
