@@ -11,7 +11,6 @@
    printf ("Process %s\n", processor_name);
  
    starttime = MPI_Wtime();
-   //Here some computation or communication
    endtime = MPI_Wtime();
    printf ("Time: %lf\n",endtime-starttime);
  
