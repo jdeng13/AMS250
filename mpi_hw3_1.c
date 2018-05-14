@@ -4,6 +4,7 @@
 
 int main(int argc, char *argv[])  {
  int size, rank, next, prev, buf[2], tag1=1, tag2=2;
+ 
  MPI_Request reqs[4];
  MPI_Status stats[4];
  
@@ -23,6 +24,6 @@ int main(int argc, char *argv[])  {
  /*do some work*/
  
  MPI_Waitall(4, reqs, stats);
- 
+ printf("rank = %d);
  MPI_Finalize();
 }
