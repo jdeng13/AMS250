@@ -1,90 +1,89 @@
+#include "mpi.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "mpi.h"
-#include <math.h>
-#define SEED 35791246
- 
-int main(int argc, char* argv[])
+
+void srandom (unsigned seed);
+double dboard (int darts);
+#define DARTS 50000     /* number of throws at dartboard */
+#define ROUNDS 100      /* number of times "darts" is iterated */
+
+int main (int argc, char *argv[])
 {
-    long niter = 1000000;
-    int myid;                       //holds process's rank id
-    double x,y;                     //x,y value for the random coordinate
-    int i, count=0;                 //Count holds all the number of how many good coordinates
-    double z;                       //Used to check if x^2+y^2<=1
-    double pi;                      //holds approx value of pi
-    int nodenum;
- 
-    MPI_Init(&argc, &argv);                 //Start MPI
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);           //get rank of node's process
-    MPI_Comm_size(MPI_COMM_WORLD, &nodenum);
-    int recieved[nodenum];
-    long recvniter[nodenum];
-    srand(SEED);                        //Give rand() a seed value
- 
-    if(myid != 0)
-    {
-        for (i=0; i<niter; ++i)                  //main loop
-        {
-            x= ((double)rand())/RAND_MAX;           //gets a random x coordinate
-            y =((double)rand())/RAND_MAX;           //gets a random y coordinate
-            z = sqrt(x*x+y*y);                  //Checks to see if number in inside unit circle
-            if (z<=1)
-            {
-                count++;                //if it is, consider it a valid random point
-            }
-        }
-        for(i=0; i<nodenum; ++i)
-        {
-            MPI_Send(&count,
-                                 1,
-                                 MPI_INT,
-                                 0,
-                                 myid,
-                                 MPI_COMM_WORLD);
-            MPI_Send(&niter,
-                                 1,
-                                 MPI_LONG,
-                                 0,
-                                 myid,
-                                 MPI_COMM_WORLD);
-        }
-    }
-    else if (myid == 0)
-    {
-        for(i=0; i<nodenum; ++i)
-        {
-            MPI_Recv(&recieved[i],
-                                 nodenum,
-                                 MPI_INT,
-                                 MPI_ANY_SOURCE,
-                                 MPI_ANY_TAG,
-                                 MPI_COMM_WORLD,
-                                 MPI_STATUS_IGNORE);
-            MPI_Recv(&recvniter[i],
-                                 nodenum,
-                                 MPI_LONG,
-                                 MPI_ANY_SOURCE,
-                                 MPI_ANY_TAG,
-                                 MPI_COMM_WORLD,
-                                 MPI_STATUS_IGNORE);
-        }
-    }
- 
-    if (myid == 0)                      //if root process
-    {
-        int finalcount = 0;
-        long finalniter = 0;
-        for(i = 0; i<nodenum; ++i)
-        {
-            finalcount += recieved[i];
-            finalniter += recvniter[i];
-        }
- 
-        pi = ((double)finalcount/(double)finalniter)*4.0;               //p = 4(m/n)
-        printf("Pi: %f\n", pi);             //Print the calculated value of pi
- 
-    }
- 
-    MPI_Finalize();                     //Close the MPI instance
-    return 0;
+double	homepi,         /* value of pi calculated by current task */
+	pisum,	        /* sum of tasks' pi values */
+	pi,	        /* average of pi after "darts" is thrown */
+	avepi;	        /* average pi value for all iterations */
+int	taskid,	        /* task ID - also used as seed number */
+	numtasks,       /* number of tasks */
+	rc,             /* return code */
+	i;
+MPI_Status status;
+
+/* Obtain number of tasks and task ID */
+MPI_Init(&argc,&argv);
+MPI_Comm_size(MPI_COMM_WORLD,&numtasks);
+MPI_Comm_rank(MPI_COMM_WORLD,&taskid);
+printf ("MPI task %d has started...\n", taskid);
+
+/* Set seed for random number generator equal to task ID */
+srandom (taskid);
+
+avepi = 0;
+for (i = 0; i < ROUNDS; i++) {
+   /* All tasks calculate pi using dartboard algorithm */
+   homepi = dboard(DARTS);
+
+   rc = MPI_Reduce(&homepi, &pisum, 1, MPI_DOUBLE, MPI_SUM,
+                   MASTER, MPI_COMM_WORLD);
+
+   /* Master computes average for this iteration and all iterations */
+   if (taskid == MASTER) {
+      pi = pisum/numtasks;
+      avepi = ((avepi * i) + pi)/(i + 1); 
+      printf("   After %8d throws, average value of pi = %10.8f\n",
+              (DARTS * (i + 1)),avepi);
+   }    
+} 
+if (taskid == MASTER) 
+   printf ("\nReal value of PI: 3.1415926535897 \n");
+
+MPI_Finalize();
+return 0;
 }
+
+double dboard(int darts)
+{
+#define sqr(x)	((x)*(x))
+long random(void);
+double x_coord, y_coord, pi, r; 
+int score, n;
+unsigned int cconst;  /* must be 4-bytes in size */
+
+if (sizeof(cconst) != 4) {
+   printf("Wrong data size for cconst variable in dboard routine!\n");
+   printf("See comments in source file. Quitting.\n");
+   exit(1);
+   }
+   /* 2 bit shifted to MAX_RAND later used to scale random number between 0 and 1 */
+   cconst = 2 << (31 - 1);
+   score = 0;
+
+   /* "throw darts at board" */
+   for (n = 1; n <= darts; n++)  {
+      /* generate random numbers for x and y coordinates */
+      r = (double)random()/cconst;
+      x_coord = (2.0 * r) - 1.0;
+      r = (double)random()/cconst;
+      y_coord = (2.0 * r) - 1.0;
+
+      /* if dart lands in circle, increment score */
+      if ((sqr(x_coord) + sqr(y_coord)) <= 1.0)
+           score++;
+      }
+
+/* calculate pi */
+pi = 4.0 * (double)score/(double)darts;
+return(pi);
+} 
+
+
