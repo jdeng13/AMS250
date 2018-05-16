@@ -33,7 +33,7 @@
 	
 
 	MPI_Waitall(8, reqs, stats);
-	printf("Task %d communicated with tasks %d & %d & %d & %d\n",rank,prev,next);
+	printf("Task %d communicated with tasks %d & %d\n",rank,prev,next);
 	
 
 	MPI_Finalize();
