@@ -22,18 +22,18 @@
 	
 
 	MPI_Irecv(&buf[0], 1, MPI_INT, prev, tag1, MPI_COMM_WORLD, &reqs[0]);
-	MPI_Irecv(&buf[1], 1, MPI_INT, next, tag2, MPI_COMM_WORLD, &reqs[1]);
+	MPI_Irecv(&buf[1], 1, MPI_INT, prev, tag2, MPI_COMM_WORLD, &reqs[1]);
 	MPI_Irecv(&buf[2], 1, MPI_INT, next, tag3, MPI_COMM_WORLD, &reqs[2]);
         MPI_Irecv(&buf[3], 1, MPI_INT, next, tag4, MPI_COMM_WORLD, &reqs[3]);
 
 	MPI_Isend(&rank, 1, MPI_INT, prev, tag4, MPI_COMM_WORLD, &reqs[4]);
-	MPI_Isend(&rank, 1, MPI_INT, next, tag3, MPI_COMM_WORLD, &reqs[5]);
+	MPI_Isend(&rank, 1, MPI_INT, prev, tag3, MPI_COMM_WORLD, &reqs[5]);
         MPI_Isend(&rank, 1, MPI_INT, next, tag2, MPI_COMM_WORLD, &reqs[6]);
         MPI_Isend(&rank, 1, MPI_INT, next, tag1, MPI_COMM_WORLD, &reqs[7]);
 	
 
 	MPI_Waitall(8, reqs, stats);
-	printf("Task %d communicated with tasks %d & %d\n",rank,prev,next);
+	printf("Task %d communicated with tasks %d & %d & %d & %d\n",rank,prev,next);
 	
 
 	MPI_Finalize();
